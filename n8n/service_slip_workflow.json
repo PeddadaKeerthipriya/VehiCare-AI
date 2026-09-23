@@ -1,0 +1,169 @@
+{
+  "name": "VehiCare Workflow 1 - Service Slip OCR & LLM Intelligence Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "service-slip-uploaded",
+        "options": {}
+      },
+      "id": "ss-webhook-001",
+      "name": "n8n Webhook (Upload Image)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (let i = 0; i < items.length; i++) {\n  const item = items[i];\n  const binaryObj = item.binary || {};\n  const binaryKey = Object.keys(binaryObj)[0] || 'data';\n  \n  let base64Data = '';\n  let mimeType = 'image/png';\n  \n  if (binaryObj[binaryKey]) {\n    mimeType = binaryObj[binaryKey].mimeType || 'image/png';\n    try {\n      const buffer = await this.helpers.getBinaryDataBuffer(i, binaryKey);\n      base64Data = buffer.toString('base64');\n    } catch (e) {\n      if (typeof binaryObj[binaryKey].data === 'string' && binaryObj[binaryKey].data.length > 50) {\n        base64Data = binaryObj[binaryKey].data;\n      }\n    }\n  }\n\n  const slipId = item.json.body?.slip_id || item.json.slip_id || 'ce149694-3228-4951-897a-5be5ed52f55c';\n\n  results.push({\n    json: {\n      slip_id: slipId,\n      mime_type: mimeType,\n      image_url: `data:${mimeType};base64,${base64Data}`\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "ss-prepare-001",
+      "name": "Prepare Image Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "HTTP-Referer",
+              "value": "https://vehicare.app"
+            },
+            {
+              "name": "X-Title",
+              "value": "VehiCare AI"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: 'anthropic/claude-3-haiku',\n  messages: [\n    {\n      role: 'system',\n      content: 'You are an expert AI Data Extraction Specialist for vehicle maintenance invoices. Extract structured JSON strictly matching: { service_date: string (YYYY-MM-DD or null), mileage: number or null, service_type: string[], cost: number or null, service_items: [{ name: string, amount: number }], parts: [{ name: string, amount: number }], notes: string or null, confidence_notes: number (1-5) }. Never hallucinate missing info. Return JSON only.'\n    },\n    {\n      role: 'user',\n      content: [\n        {\n          type: 'text',\n          text: 'Extract structured JSON from this maintenance invoice image:'\n        },\n        {\n          type: 'image_url',\n          image_url: {\n            url: $json.image_url\n          }\n        }\n      ]\n    }\n  ],\n  temperature: 0.0,\n  max_tokens: 1000\n}) }}",
+        "options": {}
+      },
+      "id": "ss-openrouter-001",
+      "name": "OpenRouter -> Claude Haiku Vision Extractor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const item = $input.first();\nconst content = item.json.choices?.[0]?.message?.content || '{}';\nconst slipId = $('Prepare Image Payload').first().json.slip_id || 'ce149694-3228-4951-897a-5be5ed52f55c';\n\nlet parsed = {};\ntry {\n  const cleanContent = content.replace(/```json/gi, '').replace(/```/g, '').trim();\n  parsed = JSON.parse(cleanContent);\n} catch (e) {\n  parsed = { raw_output: content, error: 'JSON parse error' };\n}\n\nreturn [{\n  json: {\n    slip_id: slipId,\n    parsed_data: parsed,\n    status: 'Parsed'\n  }\n}];"
+      },
+      "id": "ss-parse-001",
+      "name": "Parse Structured JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://pklriiaxigecpcfovevp.supabase.co/rest/v1/service_slips?id=eq.{{$json.slip_id}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  ocr_raw_text: JSON.stringify($json.parsed_data),\n  parsed_data: $json.parsed_data,\n  status: 'Parsed'\n}) }}",
+        "options": {}
+      },
+      "id": "ss-supabase-001",
+      "name": "Update Supabase service_slips",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1200,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "n8n Webhook (Upload Image)": {
+      "main": [
+        [
+          {
+            "node": "Prepare Image Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Image Payload": {
+      "main": [
+        [
+          {
+            "node": "OpenRouter -> Claude Haiku Vision Extractor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter -> Claude Haiku Vision Extractor": {
+      "main": [
+        [
+          {
+            "node": "Parse Structured JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Structured JSON": {
+      "main": [
+        [
+          {
+            "node": "Update Supabase service_slips",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -1,0 +1,197 @@
+{
+  "name": "VehiCare - Vehicle Health Reporter Weekly Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "id": "vh-reporter-001",
+      "name": "Weekly Cron Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        250,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://pklriiaxigecpcfovevp.supabase.co/rest/v1/vehicles?select=id,make,model,year,vin,odometer_km,user_id,service_records(*),fault_diagnoses(*),maintenance_schedules(*),insurance_policies(*),puc_certificates(*)",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "vh-reporter-002",
+      "name": "Fetch Vehicles & Health Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        450,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst formattedResults = [];\n\n// Filter valid vehicles with an assigned user_id (process top active vehicles)\nconst validVehicles = items\n  .map(item => item.json)\n  .filter(v => v && v.id && v.user_id)\n  .slice(0, 5);\n\nfor (const v of validVehicles) {\n  const services = v.service_records || [];\n  const diagnoses = v.fault_diagnoses || [];\n  const maintenance = v.maintenance_schedules || [];\n  const insurance = v.insurance_policies || [];\n  const puc = v.puc_certificates || [];\n\n  const overdueMaintenance = maintenance.filter(m => m.status === 'overdue' || m.status === 'due_soon');\n  const recentDiagnoses = diagnoses.slice(0, 3);\n  const recentServices = services.slice(0, 3);\n\n  const promptContext = `Vehicle: ${v.year || ''} ${v.make || ''} ${v.model || ''} (VIN: ${v.vin || 'N/A'}, Odometer: ${v.odometer_km || 0} km)\nOverdue/Due Maintenance (${overdueMaintenance.length}): ${overdueMaintenance.map(m => m.task_name + ' [' + m.status + ']').join(', ') || 'None'}\nRecent Diagnoses (${recentDiagnoses.length}): ${recentDiagnoses.map(d => d.symptom + ' -> Cause: ' + (d.possible_cause || 'N/A')).join('; ') || 'None'}\nRecent Services (${recentServices.length}): ${recentServices.map(s => s.service_type + ' on ' + (s.service_date || s.created_at || '')).join('; ') || 'None'}\nInsurance Status: ${insurance.length > 0 ? 'Active (Expires ' + (insurance[0].expiry_date || 'N/A') + ')' : 'No policy'}\nPUC Status: ${puc.length > 0 ? 'Expiry: ' + (puc[0].expiry_date || 'N/A') : 'No PUC'}`;\n\n  formattedResults.push({\n    json: {\n      vehicle_id: v.id,\n      user_id: v.user_id,\n      vehicle_model: `${v.year || ''} ${v.make || ''} ${v.model || ''}`.trim(),\n      prompt_context: promptContext,\n      raw_vehicle: v\n    }\n  });\n}\n\nreturn formattedResults;"
+      },
+      "id": "vh-reporter-003",
+      "name": "Format Health Prompt Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        650,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://openrouter.ai/api/v1/chat/completions",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer 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"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  model: 'deepseek/deepseek-chat',\n  messages: [\n    {\n      role: 'system',\n      content: 'You are VehiCare AI Health Reporter. Generate a concise weekly vehicle health summary (max 3-4 bullet points) for the owner. Include a Health Score (0-100), key concerns if any, and recommended action items for the week.'\n    },\n    {\n      role: 'user',\n      content: $json.prompt_context\n    }\n  ],\n  temperature: 0.3,\n  max_tokens: 500\n}) }}",
+        "options": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 1000
+            }
+          }
+        }
+      },
+      "id": "vh-reporter-004",
+      "name": "Generate LLM Health Summary",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        850,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pklriiaxigecpcfovevp.supabase.co/rest/v1/notifications",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  user_id: ($('Format Health Prompt Context').item?.json?.user_id || $node['Format Health Prompt Context']?.json?.user_id),\n  channel: 'in_app',\n  message: 'Weekly Health Summary for ' + ($('Format Health Prompt Context').item?.json?.vehicle_model || $node['Format Health Prompt Context']?.json?.vehicle_model || 'Vehicle') + ':\\n\\n' + ($json.choices?.[0]?.message?.content || ''),\n  is_sent: true\n}) }}"
+      },
+      "id": "vh-reporter-005",
+      "name": "Queue Weekly Report Notification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1050,
+        350
+      ]
+    }
+  ],
+  "connections": {
+    "Weekly Cron Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Vehicles & Health Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Vehicles & Health Data": {
+      "main": [
+        [
+          {
+            "node": "Format Health Prompt Context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Health Prompt Context": {
+      "main": [
+        [
+          {
+            "node": "Generate LLM Health Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate LLM Health Summary": {
+      "main": [
+        [
+          {
+            "node": "Queue Weekly Report Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {}
+}

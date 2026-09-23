@@ -1,0 +1,256 @@
+{
+  "name": "VehiCare Workflow 2 - Fault Diagnosis Intelligence Pipeline",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "diagnose-fault",
+        "options": {}
+      },
+      "name": "n8n Webhook (Symptom Input)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        250,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "prompt": "You are a vehicle fault diagnosis assistant.\n\nAnalyze the user's vehicle symptom and available vehicle information.\n\nSymptom:\n{{ $json.body?.symptom || $json.symptom || '' }}\n\nVehicle information:\n{{ JSON.stringify($json.body?.vehicle_info || $json.vehicle_info || {}) }}\n\nService history:\n{{ JSON.stringify($json.body?.service_history || $json.service_history || []) }}\n\nRetrieved knowledge:\n{{ $json.body?.retrieved_knowledge_text || $json.retrieved_knowledge_text || '' }}\n\nReturn ONLY valid JSON in exactly this format:\n\n{\n  \"possible_cause\": \"string\",\n  \"recommended_action\": \"string\",\n  \"severity\": \"low\",\n  \"confidence_score\": 0.0,\n  \"mechanic_required\": false\n}\n\nSeverity must be exactly one of:\nlow, medium, high, critical.\n\nconfidence_score must be between 0 and 1.\n\nSet mechanic_required to true when the issue is dangerous or requires professional inspection."
+      },
+      "name": "Basic LLM Chain",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.4,
+      "position": [
+        480,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const text = $input.item.json.text || JSON.stringify($input.item.json);\nlet jsonStr = text.trim();\nif (jsonStr.startsWith('```json')) jsonStr = jsonStr.slice(7);\nif (jsonStr.startsWith('```')) jsonStr = jsonStr.slice(3);\nif (jsonStr.endsWith('```')) jsonStr = jsonStr.slice(0, -3);\njsonStr = jsonStr.trim();\n\ntry {\n  const parsed = JSON.parse(jsonStr);\n  return { json: parsed };\n} catch (e) {\n  return {\n    json: {\n      possible_cause: 'Potential vehicle system issue detected.',\n      recommended_action: 'Perform routine mechanical inspection.',\n      severity: 'medium',\n      confidence_score: 0.75,\n      mechanic_required: true\n    }\n  };\n}"
+      },
+      "name": "Parse Diagnosis",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pklriiaxigecpcfovevp.supabase.co/rest/v1/fault_diagnosis",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY || $env.SUPABASE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY || $env.SUPABASE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=representation"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"vehicle_id\": $json.vehicle_id,\n  \"symptom\": $node[\"n8n Webhook (Symptom Input)\"].json.body.symptom,\n  \"severity\": $json.diagnosis.severity,\n  \"possible_cause\": $json.diagnosis.possible_cause,\n  \"recommended_action\": $json.diagnosis.recommended_action,\n  \"confidence_score\": $json.diagnosis.confidence_score,\n  \"mechanic_required\": $json.diagnosis.mechanic_required,\n  \"confidence_notes\": $json.diagnosis.confidence_notes\n}",
+        "options": {}
+      },
+      "name": "Insert Supabase fault_diagnosis Table",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 3,
+      "position": [
+        880,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.diagnosis ? $json.diagnosis.severity : $json.severity}}",
+              "operation": "contains",
+              "value2": "Critical"
+            }
+          ]
+        }
+      },
+      "id": "fd-if-critical-001",
+      "name": "Check Critical Severity",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1080,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pklriiaxigecpcfovevp.supabase.co/rest/v1/notifications",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY || $env.SUPABASE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY || $env.SUPABASE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"user_id\": \"{{$node['n8n Webhook (Symptom Input)'].json.body.user_id || 'system'}}\",\n  \\\"channel\\\": \\\"sms\\\",\n  \"message\": \"URGENT SAFETY ALERT: Critical fault detected! Cause: {{$json.diagnosis ? $json.diagnosis.possible_cause : $json.possible_cause}}. Recommended Action: {{$json.diagnosis ? $json.diagnosis.recommended_action : $json.recommended_action}}\",\n  \"is_sent\": false\n}"
+      },
+      "id": "fd-queue-critical-001",
+      "name": "Auto Opt-In Critical Notification (Supabase)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1280,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.RESEND_API_KEY || $env.SENDGRID_API_KEY || 're_default_key'}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from\": \"VehiCare Critical Alerts <alerts@vehicare.ai>\",\n  \"to\": [\"user@vehicare.ai\"],\n  \"subject\": \"🚨 CRITICAL SAFETY ALERT: Vehicle Fault Detected\",\n  \"html\": \"<h2 style='color:red;'>🚨 CRITICAL SAFETY ALERT</h2><p><strong>Cause:</strong> {{$node['Check Critical Severity'].json.diagnosis ? $node['Check Critical Severity'].json.diagnosis.possible_cause : $node['Check Critical Severity'].json.possible_cause}}</p><p><strong>Action Required:</strong> {{$node['Check Critical Severity'].json.diagnosis ? $node['Check Critical Severity'].json.diagnosis.recommended_action : $node['Check Critical Severity'].json.recommended_action}}</p>\"\n}"
+      },
+      "id": "fd-email-critical-001",
+      "name": "Trigger Instant Critical Email (Resend/SendGrid)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1480,
+        150
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        1680,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "n8n Webhook (Symptom Input)": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Parse Diagnosis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Diagnosis": {
+      "main": [
+        [
+          {
+            "node": "Insert Supabase fault_diagnosis Table",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Supabase fault_diagnosis Table": {
+      "main": [
+        [
+          {
+            "node": "Check Critical Severity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Critical Severity": {
+      "main": [
+        [
+          {
+            "node": "Auto Opt-In Critical Notification (Supabase)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto Opt-In Critical Notification (Supabase)": {
+      "main": [
+        [
+          {
+            "node": "Trigger Instant Critical Email (Resend/SendGrid)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

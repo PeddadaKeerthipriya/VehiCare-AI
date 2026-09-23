@@ -1,0 +1,11 @@
+# Replace with your real domains (both must have DNS A records
+# pointing at this VPS's IP address before you start Caddy, or the
+# automatic HTTPS certificate request will fail).
+
+yourdomain.com {
+    reverse_proxy frontend:3000
+}
+
+api.yourdomain.com {
+    reverse_proxy backend:8000
+}

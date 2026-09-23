@@ -1,0 +1,111 @@
+{
+  "name": "Backup_Vehicareai",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 2
+            }
+          ]
+        }
+      },
+      "id": "5b28c992-b12f-4941-8813-8a593ffbfe45",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -768,
+        1008
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const SUPABASE_URL = 'https://pklriiaxigecpcfovevp.supabase.co';\nconst SERVICE_KEY = 'REDACTED';\n\nconst tables = [\n  'vehicles', 'service_records', 'service_slips', 'fault_diagnoses',\n  'maintenance_schedules', 'custom_intervals', 'insurance_policies',\n  'puc_certificates', 'fastag_accounts', 'notifications',\n  'notification_preferences', 'users'\n];\n\nconst backup = {};\n\nfor (const table of tables) {\n  const response = await this.helpers.httpRequest({\n    method: 'GET',\n    url: `${SUPABASE_URL}/rest/v1/${table}?select=*`,\n    headers: {\n      apikey: SERVICE_KEY,\n      Authorization: `Bearer ${SERVICE_KEY}`,\n      Range: '0-9999'\n    },\n    json: true,\n  });\n  backup[table] = response;\n}\n\nbackup._backup_metadata = {\n  generated_at: new Date().toISOString(),\n  table_count: tables.length\n};\n\nreturn [{ json: backup }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -544,
+        1008
+      ],
+      "id": "c703b67b-06b5-4dde-b0e2-fecdc83eec98",
+      "name": "Fetch and combine all tables"
+    },
+    {
+      "parameters": {
+        "jsCode": "const crypto = require('crypto');\n\nconst KEY_ID = '0051c93d2ac285e0000000003';\nconst APPLICATION_KEY = 'REDACTED';\nconst BUCKET_ID = '312c4903ed628afca208051e'; // from your bucket screenshot earlier\nconst BUCKET_NAME = 'vehicare-backups';\n\n// Step 1: Authorize with Backblaze\nconst authString = Buffer.from(`${KEY_ID}:${APPLICATION_KEY}`).toString('base64');\nconst authResponse = await this.helpers.httpRequest({\n  method: 'GET',\n  url: 'https://api.backblazeb2.com/b2api/v2/b2_authorize_account',\n  headers: { Authorization: `Basic ${authString}` },\n  json: true,\n});\n\n// Step 2: Get an upload URL\nconst uploadUrlResponse = await this.helpers.httpRequest({\n  method: 'POST',\n  url: `${authResponse.apiUrl}/b2api/v2/b2_get_upload_url`,\n  headers: { Authorization: authResponse.authorizationToken },\n  body: { bucketId: BUCKET_ID },\n  json: true,\n});\n\n// Step 3: Prepare the backup file content\nconst backupData = items[0].json; // comes from the previous Code node\nconst fileContent = JSON.stringify(backupData, null, 2);\nconst fileName = `vehicare-backup-${new Date().toISOString().split('T')[0]}.json`;\n\n// Step 4: Compute SHA1 checksum (Backblaze requires this)\nconst sha1 = crypto.createHash('sha1').update(fileContent).digest('hex');\n\n// Step 5: Upload the file\nconst uploadResponse = await this.helpers.httpRequest({\n  method: 'POST',\n  url: uploadUrlResponse.uploadUrl,\n  headers: {\n    Authorization: uploadUrlResponse.authorizationToken,\n    'X-Bz-File-Name': fileName,\n    'Content-Type': 'application/json',\n    'X-Bz-Content-Sha1': sha1,\n  },\n  body: fileContent,\n  json: false,\n});\n\nreturn [{ json: { success: true, fileName, uploadResponse } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        1008
+      ],
+      "id": "a6642b40-71f2-416a-acfb-124b763c5f89",
+      "name": "Upload to Backblaze"
+    },
+    {
+      "parameters": {
+        "jsCode": "const KEY_ID = 'REDACTED';\nconst APPLICATION_KEY = 'K005ua1I1+yMuOesyncx0m+ZToXM7EE';\nconst BUCKET_ID = '312c4903ed628afca208051e';\nconst RETENTION_DAYS = 14;\n\nconst authString = Buffer.from(`${KEY_ID}:${APPLICATION_KEY}`).toString('base64');\nconst auth = await this.helpers.httpRequest({\n  method: 'GET',\n  url: 'https://api.backblazeb2.com/b2api/v2/b2_authorize_account',\n  headers: { Authorization: `Basic ${authString}` },\n  json: true,\n});\n\nconst filesResponse = await this.helpers.httpRequest({\n  method: 'POST',\n  url: `${auth.apiUrl}/b2api/v2/b2_list_file_names`,\n  headers: { Authorization: auth.authorizationToken },\n  body: { bucketId: BUCKET_ID, maxFileCount: 1000 },\n  json: true,\n});\n\nconst cutoff = Date.now() - RETENTION_DAYS * 24 * 60 * 60 * 1000;\nconst deleted = [];\n\nfor (const file of filesResponse.files) {\n  if (file.uploadTimestamp < cutoff) {\n    await this.helpers.httpRequest({\n      method: 'POST',\n      url: `${auth.apiUrl}/b2api/v2/b2_delete_file_version`,\n      headers: { Authorization: auth.authorizationToken },\n      body: { fileName: file.fileName, fileId: file.fileId },\n      json: true,\n    });\n    deleted.push(file.fileName);\n  }\n}\n\nreturn [{ json: { deletedCount: deleted.length, deleted } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -96,
+        1008
+      ],
+      "id": "587829bf-da06-48ca-bb45-09fac9f04061",
+      "name": "Delete old backups"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch and combine all tables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch and combine all tables": {
+      "main": [
+        [
+          {
+            "node": "Upload to Backblaze",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Backblaze": {
+      "main": [
+        [
+          {
+            "node": "Delete old backups",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "6ddda70d-97ac-4b4c-a494-b89429bedaa9",
+  "meta": {
+    "instanceId": "433207e928d269b4d13fd0d26c6b49d3478d3649240d1d95ae6d1766ae087f9a"
+  },
+  "nodeGroups": [],
+  "id": "XrG8sfi3WuZmkoYl",
+  "tags": []
+}

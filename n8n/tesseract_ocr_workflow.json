@@ -1,0 +1,106 @@
+{
+  "name": "Tesseract.js OCR Workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "b90dfb14-c115-46f3-a15d-4f114c000001",
+      "name": "On clicking 'Test Workflow'",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        250,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "fileSelector": "C:/Users/knikh/Downloads/vehicare/vehicare/samples/test_image.png"
+      },
+      "id": "b90dfb14-c115-46f3-a15d-4f114c000002",
+      "name": "Read Binary File (Image)",
+      "type": "n8n-nodes-base.readBinaryFile",
+      "typeVersion": 1,
+      "position": [
+        450,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "binaryPropertyName": "data",
+        "language": "eng"
+      },
+      "id": "b90dfb14-c115-46f3-a15d-4f114c000003",
+      "name": "Tesseract OCR",
+      "type": "n8n-nodes-tesseractjs.ocr",
+      "typeVersion": 1,
+      "position": [
+        650,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "rawText",
+              "value": "={{ $json.text }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b90dfb14-c115-46f3-a15d-4f114c000004",
+      "name": "Extract Raw Text",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        850,
+        350
+      ]
+    }
+  ],
+  "connections": {
+    "On clicking 'Test Workflow'": {
+      "main": [
+        [
+          {
+            "node": "Read Binary File (Image)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Binary File (Image)": {
+      "main": [
+        [
+          {
+            "node": "Tesseract OCR",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tesseract OCR": {
+      "main": [
+        [
+          {
+            "node": "Extract Raw Text",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {}
+}

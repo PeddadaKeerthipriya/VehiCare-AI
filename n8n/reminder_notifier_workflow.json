@@ -1,0 +1,338 @@
+{
+  "name": "VehiCare - Reminder Notifier Cron Workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "interval": 1
+            }
+          ]
+        }
+      },
+      "id": "f90dfb14-c115-46f3-a15d-4f114c000001",
+      "name": "Daily Cron Trigger",
+      "type": "n8n-nodes-base.cron",
+      "typeVersion": 1,
+      "position": [
+        250,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://pklriiaxigecpcfovevp.supabase.co/rest/v1/maintenance_schedules?status=in.(overdue,due_soon)&select=*,vehicles(id,model,user_id)",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f90dfb14-c115-46f3-a15d-4f114c000002",
+      "name": "Fetch Due Services",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        450,
+        250
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://pklriiaxigecpcfovevp.supabase.co/rest/v1/insurance_policies?select=*,vehicles(id,model,user_id)",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "rn-insurance-001",
+      "name": "Fetch Insurance Expiries",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        450,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://pklriiaxigecpcfovevp.supabase.co/rest/v1/puc_certificates?select=*,vehicles(id,model,user_id)",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "rn-puc-001",
+      "name": "Fetch PUC Expiries",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        450,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "https://pklriiaxigecpcfovevp.supabase.co/rest/v1/fastag_accounts?select=*,vehicles(id,model,user_id)",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "rn-fastag-001",
+      "name": "Fetch FASTag Accounts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        450,
+        550
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const maintenanceItems = $node['Fetch Due Services'].json;\nconst insuranceItems = $node['Fetch Insurance Expiries'].json;\nconst pucItems = $node['Fetch PUC Expiries'].json;\nconst fastagItems = $node['Fetch FASTag Accounts'].json;\n\nconst now = new Date();\nconst results = [];\n\n// 1. Process Maintenance Schedules\nif (Array.isArray(maintenanceItems)) {\n  for (const item of maintenanceItems) {\n    if (!item.id || !item.vehicles) continue;\n    results.push({\n      json: {\n        entity_type: 'maintenance',\n        entity_id: item.id,\n        user_id: item.vehicles.user_id,\n        vehicle_model: item.vehicles.model,\n        status: item.status,\n        due_date: item.due_date,\n        message: `Reminder: Maintenance item '${item.task_name || 'Service'}' for vehicle ${item.vehicles.model || ''} is currently ${item.status}. Due on ${item.due_date || 'N/A'}.`,\n      }\n    });\n  }\n}\n\n// 2. Process Insurance Policies\nif (Array.isArray(insuranceItems)) {\n  for (const item of insuranceItems) {\n    if (!item.id || !item.vehicles || !item.expiry_date) continue;\n    const expDate = new Date(item.expiry_date);\n    const diffDays = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));\n    if (diffDays <= 30) {\n      const status = diffDays < 0 ? 'expired' : 'due_soon';\n      results.push({\n        json: {\n          entity_type: 'insurance',\n          entity_id: item.id,\n          user_id: item.vehicles.user_id,\n          vehicle_model: item.vehicles.model,\n          status: status,\n          due_date: item.expiry_date,\n          message: `Insurance Reminder: Policy ${item.policy_number || ''} for vehicle ${item.vehicles.model || ''} is ${status} (Expiry: ${item.expiry_date}).`,\n        }\n      });\n    }\n  }\n}\n\n// 3. Process PUC Certificates\nif (Array.isArray(pucItems)) {\n  for (const item of pucItems) {\n    if (!item.id || !item.vehicles || !item.expiry_date) continue;\n    const expDate = new Date(item.expiry_date);\n    const diffDays = Math.ceil((expDate - now) / (1000 * 60 * 60 * 24));\n    if (diffDays <= 15) {\n      const status = diffDays < 0 ? 'expired' : 'due_soon';\n      results.push({\n        json: {\n          entity_type: 'puc',\n          entity_id: item.id,\n          user_id: item.vehicles.user_id,\n          vehicle_model: item.vehicles.model,\n          status: status,\n          due_date: item.expiry_date,\n          message: `PUC Reminder: Certificate ${item.puc_number || ''} for vehicle ${item.vehicles.model || ''} is ${status} (Expiry: ${item.expiry_date}).`,\n        }\n      });\n    }\n  }\n}\n\n// 4. Process FASTag Accounts\nif (Array.isArray(fastagItems)) {\n  for (const item of fastagItems) {\n    if (!item.id || !item.vehicles) continue;\n    const balance = parseFloat(item.balance || 0);\n    if (balance < 200 || item.status === 'low_balance' || item.status === 'expired') {\n      results.push({\n        json: {\n          entity_type: 'fastag',\n          entity_id: item.id,\n          user_id: item.vehicles.user_id,\n          vehicle_model: item.vehicles.model,\n          status: item.status || 'low_balance',\n          due_date: item.updated_at || new Date().toISOString(),\n          message: `FASTag Alert: Account for vehicle ${item.vehicles.model || ''} has low balance (₹${balance}). Please recharge soon.`,\n        }\n      });\n    }\n  }\n}\n\nreturn results;"
+      },
+      "id": "rn-aggregate-001",
+      "name": "Aggregate Multi-Entity Alerts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        650,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\nconst notifiedCache = $getWorkflowStaticData('global').notifiedCache || {};\nconst newNotifiedCache = {};\nconst todayStr = new Date().toISOString().split('T')[0];\n\nfor (const item of items) {\n  const json = item.json;\n  const cacheKey = `${json.entity_type}_${json.entity_id}`;\n  const status = json.status;\n  \n  // Deduplication: Only notify once every 7 days for warnings, or 3 days for critical overdue/expired items\n  const lastNotified = notifiedCache[cacheKey];\n  let shouldNotify = true;\n  \n  if (lastNotified) {\n    const diffTime = Math.abs(new Date(todayStr) - new Date(lastNotified));\n    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));\n    const limit = (status === 'overdue' || status === 'expired') ? 3 : 7;\n    if (diffDays < limit) {\n      shouldNotify = false;\n    }\n  }\n  \n  if (shouldNotify) {\n    newNotifiedCache[cacheKey] = todayStr;\n    results.push(item);\n  } else {\n    newNotifiedCache[cacheKey] = lastNotified;\n  }\n}\n\n$getWorkflowStaticData('global').notifiedCache = newNotifiedCache;\nreturn results;"
+      },
+      "id": "f90dfb14-c115-46f3-a15d-4f114c000003",
+      "name": "Deduplicate Alerts",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        850,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pklriiaxigecpcfovevp.supabase.co/rest/v1/notifications",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{$env.SUPABASE_SERVICE_ROLE_KEY || $env.SUPABASE_KEY}}"
+            },
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.SUPABASE_SERVICE_ROLE_KEY || $env.SUPABASE_KEY}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"user_id\": \"{{$json.user_id}}\",\n  \"channel\": \"email\",\n  \"message\": \"{{$json.message}}\",\n  \"is_sent\": false\n}"
+      },
+      "id": "f90dfb14-c115-46f3-a15d-4f114c000004",
+      "name": "Queue Reminders",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1050,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.RESEND_API_KEY || $env.SENDGRID_API_KEY || 're_default_key'}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"from\": \"VehiCare Reminders <notifications@vehicare.ai>\",\n  \"to\": [\"user@vehicare.ai\"],\n  \"subject\": \"VehiCare Vehicle Maintenance & Expiry Reminder\",\n  \"html\": \"<h3>VehiCare Alert</h3><p>{{$node['Deduplicate Alerts'].json.message}}</p><p>Please log in to your VehiCare app to review and take action.</p>\"\n}"
+      },
+      "id": "rn-email-dispatch-001",
+      "name": "Send Email via Provider (Resend/SendGrid)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1250,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Daily Cron Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Due Services",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch Insurance Expiries",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch PUC Expiries",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Fetch FASTag Accounts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Due Services": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Multi-Entity Alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Insurance Expiries": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Multi-Entity Alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch PUC Expiries": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Multi-Entity Alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch FASTag Accounts": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Multi-Entity Alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Multi-Entity Alerts": {
+      "main": [
+        [
+          {
+            "node": "Deduplicate Alerts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Deduplicate Alerts": {
+      "main": [
+        [
+          {
+            "node": "Queue Reminders",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Queue Reminders": {
+      "main": [
+        [
+          {
+            "node": "Send Email via Provider (Resend/SendGrid)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {}
+}

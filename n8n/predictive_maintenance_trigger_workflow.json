@@ -1,0 +1,357 @@
+{
+  "name": "VehiCare - Predictive Maintenance Trigger Workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "e90dfb14-c115-46f3-a15d-4f114c000001",
+      "name": "On Mileage Update Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "predictive-maintenance",
+        "options": {}
+      },
+      "id": "e90dfb14-c115-46f3-a15d-4f114c000000",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        200,
+        450
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://pklriiaxigecpcfovevp.supabase.co/rest/v1/vehicles?id=eq.{{$json.vehicle_id || $json.body?.vehicle_id || 'ce149694-3228-4951-897a-5be5ed52f55c'}}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e90dfb14-c115-46f3-a15d-4f114c000002",
+      "name": "Fetch Vehicle Odometer",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        400,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://pklriiaxigecpcfovevp.supabase.co/rest/v1/service_records?vehicle_id=eq.{{$('Fetch Vehicle Odometer').first()?.json?.id || 'ce149694-3228-4951-897a-5be5ed52f55c'}}&select=*",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e90dfb14-c115-46f3-a15d-4f114c000003",
+      "name": "Fetch Service History",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        580,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://pklriiaxigecpcfovevp.supabase.co/rest/v1/custom_intervals?vehicle_id=eq.{{$('Fetch Vehicle Odometer').first()?.json?.id || 'ce149694-3228-4951-897a-5be5ed52f55c'}}&select=*",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e90dfb14-c115-46f3-a15d-4f114c000006",
+      "name": "Fetch Custom Intervals",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        760,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://pklriiaxigecpcfovevp.supabase.co/rest/v1/insurance_policies?vehicle_id=eq.{{$('Fetch Vehicle Odometer').first()?.json?.id || 'ce149694-3228-4951-897a-5be5ed52f55c'}}&select=*",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e90dfb14-c115-46f3-a15d-4f114c000007",
+      "name": "Fetch Insurance",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        940,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://pklriiaxigecpcfovevp.supabase.co/rest/v1/puc_certificates?vehicle_id=eq.{{$('Fetch Vehicle Odometer').first()?.json?.id || 'ce149694-3228-4951-897a-5be5ed52f55c'}}&select=*",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e90dfb14-c115-46f3-a15d-4f114c000008",
+      "name": "Fetch PUC",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1120,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://pklriiaxigecpcfovevp.supabase.co/rest/v1/fastag_accounts?vehicle_id=eq.{{$('Fetch Vehicle Odometer').first()?.json?.id || 'ce149694-3228-4951-897a-5be5ed52f55c'}}&select=*",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e90dfb14-c115-46f3-a15d-4f114c000009",
+      "name": "Fetch FASTag",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1300,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const getItems = (nodeName) => {\n  try {\n    const raw = $(nodeName).all();\n    if (Array.isArray(raw)) return raw.map(i => i.json);\n  } catch (e) {}\n  try {\n    const raw = $items(nodeName);\n    if (Array.isArray(raw)) return raw.map(i => i.json);\n    if (raw && raw.json) return Array.isArray(raw.json) ? raw.json : [raw.json];\n  } catch (e) {}\n  try {\n    const nodeObj = $node[nodeName];\n    if (nodeObj && nodeObj.json) {\n      return Array.isArray(nodeObj.json) ? nodeObj.json : [nodeObj.json];\n    }\n  } catch (e) {}\n  return [];\n};\n\nconst vehicleRows = getItems('Fetch Vehicle Odometer');\nconst vehicle = vehicleRows.length > 0 ? vehicleRows[0] : {};\nconst vehicleId = vehicle.id || 'ce149694-3228-4951-897a-5be5ed52f55c';\nconst currentOdometer = parseInt(vehicle.odometer_km || 0);\n\nconst parseDate = (dateVal) => {\n  if (!dateVal) return null;\n  try {\n    return new Date(dateVal);\n  } catch (e) {\n    return null;\n  }\n};\n\nconst addMonths = (sourceDate, months) => {\n  const d = new Date(sourceDate);\n  d.setMonth(d.getMonth() + months);\n  return d;\n};\n\nconst OEM_INTERVALS = {\n  oil: { km: 10000, months: 12, name: 'Engine Oil Replacement' },\n  tyre: { km: 10000, months: 6, name: 'Tyre Rotation / Replacement' },\n  brake: { km: 30000, months: 36, name: 'Brake System Inspection & Pads' },\n  battery: { km: 40000, months: 48, name: 'Battery Health & Replacement' },\n  air_filter: { km: 20000, months: 24, name: 'Engine Air Filter Replacement' }\n};\n\nconst today = new Date();\nconst scheduleItems = [];\n\nfor (const [compKey, cfg] of Object.entries(OEM_INTERVALS)) {\n  const dueOdometer = currentOdometer + cfg.km;\n  const dueDate = addMonths(today, cfg.months);\n  \n  scheduleItems.push({\n    vehicle_id: vehicleId,\n    task_name: cfg.name,\n    due_date: dueDate.toISOString().split('T')[0],\n    due_odometer_km: dueOdometer,\n    status: 'pending'\n  });\n}\n\nreturn [{\n  json: {\n    vehicle_id: vehicleId,\n    batch: scheduleItems\n  }\n}];"
+      },
+      "id": "e90dfb14-c115-46f3-a15d-4f114c000004",
+      "name": "Predictive Maintenance Rules Engine",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1480,
+        350
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://pklriiaxigecpcfovevp.supabase.co/rest/v1/maintenance_schedules",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "resolution=merge-duplicates"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.batch) }}"
+      },
+      "id": "e90dfb14-c115-46f3-a15d-4f114c000005",
+      "name": "Upsert Maintenance Schedule",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1660,
+        350
+      ]
+    }
+  ],
+  "connections": {
+    "On Mileage Update Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Vehicle Odometer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "Fetch Vehicle Odometer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Vehicle Odometer": {
+      "main": [
+        [
+          {
+            "node": "Fetch Service History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Service History": {
+      "main": [
+        [
+          {
+            "node": "Fetch Custom Intervals",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Custom Intervals": {
+      "main": [
+        [
+          {
+            "node": "Fetch Insurance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Insurance": {
+      "main": [
+        [
+          {
+            "node": "Fetch PUC",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch PUC": {
+      "main": [
+        [
+          {
+            "node": "Fetch FASTag",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch FASTag": {
+      "main": [
+        [
+          {
+            "node": "Predictive Maintenance Rules Engine",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Predictive Maintenance Rules Engine": {
+      "main": [
+        [
+          {
+            "node": "Upsert Maintenance Schedule",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {},
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {}
+}

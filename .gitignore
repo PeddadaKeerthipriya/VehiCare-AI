@@ -1,0 +1,23 @@
+
+.env
+__pycache__/
+*.pyc
+.venv/
+venv/
+supabase/.branches
+supabase/.temp
+*.pyc
+backup_data_2026-08-26.sql 
+
+backup_*.sql 
+scratch/
+.pytest_cache/
+
+node_modules/
+
+# Streamlit secrets (never commit real credentials)
+.streamlit/secrets.toml
+
+# Deployment secrets (never commit real credentials)
+.env
+.env.backend

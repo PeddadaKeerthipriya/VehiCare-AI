@@ -1,0 +1,1 @@
+alter view service_slip_history set (security_invoker = true);

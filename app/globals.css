@@ -1,0 +1,480 @@
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@layer base {
+  .theme {
+    --font-heading: var(--font-sans);
+    --font-sans: var(--font-sans);
+  }
+  :root {
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
+    --background: #071011;
+    --foreground: #F5F7F6;
+    --card: #0B1515;
+    --card-foreground: #F5F7F6;
+    --popover: #0B1515;
+    --popover-foreground: #F5F7F6;
+    --primary: #2E7D32;
+    --primary-foreground: #FFFFFF;
+    --secondary: #101C1C;
+    --secondary-foreground: #66C56A;
+    --muted: #132020;
+    --muted-foreground: #81918E;
+    --accent: #132020;
+    --accent-foreground: #F5F7F6;
+    --destructive: #E05252;
+    --border: #203131;
+    --input: #203131;
+    --ring: #66C56A;
+    --radius: 0.75rem;
+    --sidebar: #0B1515;
+    --sidebar-foreground: #F5F7F6;
+    --sidebar-primary: #2E7D32;
+    --sidebar-primary-foreground: #FFFFFF;
+    --sidebar-accent: #101C1C;
+    --sidebar-accent-foreground: #66C56A;
+    --sidebar-border: #203131;
+    --sidebar-ring: #66C56A;
+  }
+
+  html.light {
+    --background: #F8FAFC;
+    --foreground: #0F172A;
+    --card: #FFFFFF;
+    --card-foreground: #0F172A;
+    --popover: #FFFFFF;
+    --popover-foreground: #0F172A;
+    --primary: #2E7D32;
+    --primary-foreground: #FFFFFF;
+    --secondary: #F1F5F9;
+    --secondary-foreground: #166534;
+    --muted: #F1F5F9;
+    --muted-foreground: #64748B;
+    --accent: #F1F5F9;
+    --accent-foreground: #0F172A;
+    --destructive: #DC2626;
+    --border: #E2E8F0;
+    --input: #E2E8F0;
+    --ring: #2E7D32;
+    --sidebar: #FFFFFF;
+    --sidebar-foreground: #0F172A;
+    --sidebar-primary: #2E7D32;
+    --sidebar-primary-foreground: #FFFFFF;
+    --sidebar-accent: #F1F5F9;
+    --sidebar-accent-foreground: #166534;
+    --sidebar-border: #E2E8F0;
+    --sidebar-ring: #2E7D32;
+  }
+
+  * {
+    @apply border-[#203131];
+  }
+  html.light * {
+    border-color: #E2E8F0;
+  }
+
+  body {
+    background-color: #071011;
+    color: #F5F7F6;
+    color-scheme: dark;
+  }
+  html {
+    @apply font-sans;
+    background-color: #071011;
+  }
+
+  html.light body {
+    background-color: #F8FAFC;
+    color: #0F172A;
+    color-scheme: light;
+  }
+  html.light {
+    background-color: #F8FAFC;
+  }
+}
+
+/* Light mode utility mappings for cockpit styling classes */
+html.light .bg-\[\#071011\] {
+  background-color: #F8FAFC !important;
+}
+html.light .bg-\[\#0B1515\] {
+  background-color: #FFFFFF !important;
+}
+html.light .bg-\[\#0B1515\]\/90 {
+  background-color: rgba(255, 255, 255, 0.9) !important;
+}
+html.light .bg-\[\#101C1C\] {
+  background-color: #F1F5F9 !important;
+}
+html.light .bg-\[\#101C1C\]\/80 {
+  background-color: #FFFFFF !important;
+}
+html.light .bg-\[\#132020\] {
+  background-color: #E2E8F0 !important;
+}
+html.light .bg-\[\#1C180E\] {
+  background-color: #FEF3C7 !important;
+}
+html.light .bg-\[\#1C180E\]\/60 {
+  background-color: rgba(254, 243, 199, 0.6) !important;
+}
+html.light .border-\[\#203131\] {
+  border-color: #E2E8F0 !important;
+}
+html.light .border-\[\#0B1515\] {
+  border-color: #FFFFFF !important;
+}
+html.light .border-\[\#2E7D32\]\/30,
+html.light .border-\[\#2E7D32\]\/40 {
+  border-color: rgba(46, 125, 50, 0.25) !important;
+}
+html.light .text-\[\#F5F7F6\] {
+  color: #0F172A !important;
+}
+html.light .text-\[\#B8C4C2\] {
+  color: #334155 !important;
+}
+html.light .text-\[\#81918E\] {
+  color: #64748B !important;
+}
+html.light .text-\[\#66C56A\] {
+  color: #2E7D32 !important;
+}
+html.light .divide-\[\#203131\] > :not([hidden]) ~ :not([hidden]) {
+  border-color: #E2E8F0 !important;
+}
+html.light .from-\[\#071011\] {
+  --tw-gradient-from: #FFFFFF var(--tw-gradient-from-position) !important;
+}
+html.light .via-\[\#0B1515\] {
+  --tw-gradient-via: #F8FAFC var(--tw-gradient-via-position) !important;
+}
+html.light .to-\[\#101C1C\] {
+  --tw-gradient-to: #F1F5F9 var(--tw-gradient-to-position) !important;
+}
+html.light input,
+html.light select,
+html.light textarea {
+  color: #0F172A;
+}
+
+/* ==========================================================================
+   LIGHT MODE POLISHED STYLES & INTERACTION STATES
+   ========================================================================== */
+
+/* 1. Sidebar Navigation in Light Mode */
+html.light aside {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+}
+
+html.light .sidebar-nav-item {
+  color: #475569 !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+}
+
+html.light .sidebar-nav-item .sidebar-nav-icon {
+  color: #64748B !important;
+  transition: color 150ms ease-in-out;
+}
+
+/* Subtle green-tinted hover state */
+html.light .sidebar-nav-item:hover:not(.sidebar-nav-item-active) {
+  background-color: #F0FDF4 !important;
+  color: #166534 !important;
+  border-color: #DCFCE7 !important;
+}
+
+html.light .sidebar-nav-item:hover:not(.sidebar-nav-item-active) .sidebar-nav-icon {
+  color: #166534 !important;
+}
+
+/* Active navigation item: Solid Brand Green with crisp White Text & Icon */
+html.light .sidebar-nav-item-active {
+  background-color: #2E7D32 !important;
+  color: #FFFFFF !important;
+  border-color: #2E7D32 !important;
+  box-shadow: 0 2px 6px rgba(46, 125, 50, 0.25) !important;
+  font-weight: 600 !important;
+}
+
+html.light .sidebar-nav-item-active .sidebar-nav-icon {
+  color: #FFFFFF !important;
+}
+
+html.light .sidebar-nav-item-active span {
+  color: #FFFFFF !important;
+}
+
+/* 2. Header in Light Mode */
+html.light header {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-color: #E2E8F0 !important;
+}
+
+html.light header h1 {
+  color: #0F172A !important;
+}
+
+html.light header a[title] {
+  color: #64748B !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+}
+
+html.light header a[title]:hover {
+  background-color: #F0FDF4 !important;
+  color: #2E7D32 !important;
+  border-color: #DCFCE7 !important;
+}
+
+/* 3. Mobile Bottom Navigation in Light Mode */
+html.light nav {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+}
+
+/* 4. Dashboard Hero Card in Light Mode */
+html.light .dashboard-hero-card {
+  background:
+    radial-gradient(ellipse 65% 85% at 88% 50%, rgba(13, 33, 27, 0.9) 0%, rgba(18, 44, 35, 0.6) 45%, rgba(255, 255, 255, 0) 80%),
+    linear-gradient(to right, #FFFFFF 0%, #FFFFFF 48%, #F2F8F5 70%, #E6F4ED 100%) !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 4px 24px -2px rgba(46, 125, 50, 0.1), 0 2px 8px -1px rgba(0, 0, 0, 0.04) !important;
+  color: #0F172A !important;
+}
+
+html.light .dashboard-hero-card h1 {
+  color: #0F172A !important;
+}
+
+html.light .dashboard-hero-card p {
+  color: #475569 !important;
+}
+
+html.light .dashboard-hero-card span.text-\[\#66C56A\] {
+  color: #2E7D32 !important;
+  font-weight: 700 !important;
+}
+
+/* 5. Dashboard Buttons in Light Mode */
+/* Secondary Action Buttons (Log Fuel, AI Diagnosis) */
+html.light .dashboard-secondary-btn {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #1E293B !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04) !important;
+  transition: all 180ms ease-in-out !important;
+}
+
+html.light .dashboard-secondary-btn svg {
+  color: #2E7D32 !important;
+  transition: color 180ms ease-in-out !important;
+}
+
+/* Hover: Solid green background, white text and white icon */
+html.light .dashboard-secondary-btn:hover {
+  background-color: #2E7D32 !important;
+  border-color: #2E7D32 !important;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(46, 125, 50, 0.25) !important;
+}
+
+html.light .dashboard-secondary-btn:hover svg {
+  color: #FFFFFF !important;
+}
+
+html.light .dashboard-secondary-btn:hover span {
+  color: #FFFFFF !important;
+}
+
+html.light .dashboard-secondary-btn:focus-visible {
+  outline: 2px solid #2E7D32 !important;
+  outline-offset: 2px !important;
+}
+
+/* 6. Profile Completion Ring in Light Mode */
+html.light .circular-progress-track {
+  stroke: #DCFCE7 !important;
+}
+
+html.light .circular-progress-bar {
+  stroke: #2E7D32 !important;
+}
+
+html.light .circular-progress-text {
+  color: #166534 !important;
+}
+
+html.light .circular-progress-check {
+  color: #2E7D32 !important;
+}
+
+/* 7. Vehicle Cards in Light Mode */
+html.light .vehicle-card-footer {
+  background-color: #F0FDF4 !important;
+  border-color: #DCFCE7 !important;
+  color: #166534 !important;
+  font-weight: 600 !important;
+  transition: all 180ms ease-in-out !important;
+}
+
+html.light .group:hover .vehicle-card-footer,
+html.light .vehicle-card-footer:hover {
+  background-color: #2E7D32 !important;
+  border-color: #2E7D32 !important;
+  color: #FFFFFF !important;
+}
+
+/* 8. Service Slips Dropzone & Upload in Light Mode */
+html.light .slip-upload-dropzone {
+  background-color: #F8FAF9 !important;
+  border-color: rgba(46, 125, 50, 0.35) !important;
+}
+
+html.light .slip-upload-dropzone:hover {
+  background-color: #F0FDF4 !important;
+  border-color: #2E7D32 !important;
+}
+
+html.light .slip-upload-dropzone h3 {
+  color: #0F172A !important;
+}
+
+html.light .slip-upload-dropzone p {
+  color: #64748B !important;
+}
+
+html.light .slip-upload-dropzone .bg-\[\#101C1C\] {
+  background-color: #DCFCE7 !important;
+  border-color: rgba(46, 125, 50, 0.3) !important;
+}
+
+html.light .slip-upload-dropzone .bg-\[\#101C1C\] svg {
+  color: #2E7D32 !important;
+}
+
+html.light .slip-browse-btn {
+  background-color: #FFFFFF !important;
+  border-color: #2E7D32 !important;
+  color: #2E7D32 !important;
+  transition: all 180ms ease-in-out !important;
+}
+
+html.light .slip-browse-btn:hover {
+  background-color: #2E7D32 !important;
+  border-color: #2E7D32 !important;
+  color: #FFFFFF !important;
+}
+
+/* 10. Profile Completion Checklist in Light Mode */
+html.light .checklist-row {
+  background-color: #FFFFFF !important;
+  transition: background-color 150ms ease-in-out !important;
+}
+
+html.light .checklist-row:hover {
+  background-color: #F8FAF9 !important;
+}
+
+html.light .checklist-weight-badge {
+  background-color: #F1F5F9 !important;
+  color: #334155 !important;
+  border-color: #E2E8F0 !important;
+}
+
+html.light .checklist-completed-badge {
+  background-color: #F0FDF4 !important;
+  color: #166534 !important;
+  border-color: #DCFCE7 !important;
+}
+
+html.light .checklist-pending-badge {
+  background-color: #FEF3C7 !important;
+  color: #92400E !important;
+  border-color: #FDE68A !important;
+}
+
+html.light .checklist-edit-btn {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #334155 !important;
+  transition: all 150ms ease-in-out !important;
+}
+
+html.light .checklist-edit-btn:hover {
+  background-color: #F0FDF4 !important;
+  color: #166534 !important;
+  border-color: #DCFCE7 !important;
+}
+
+/* 11. Profile Header Avatar in Light Mode */
+html.light .profile-avatar {
+  border-color: #FFFFFF !important;
+  box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  background-color: #2E7D32 !important;
+  color: #FFFFFF !important;
+}
+
+/* 12. Form Action Footers in Light Mode */
+html.light .form-action-footer {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+}
+
+html.light .form-cancel-btn {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+  color: #334155 !important;
+  transition: all 180ms ease-in-out !important;
+}
+
+html.light .form-cancel-btn:hover {
+  background-color: #F1F5F9 !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
+}
+
+/* 13. Edit Cover Photo Modal in Light Mode */
+html.light .cover-theme-banner {
+  background: linear-gradient(135deg, #1B5E20 0%, #2E7D32 50%, #388E3C 100%) !important;
+  color: #FFFFFF !important;
+}
+
+html.light .cover-theme-banner span {
+  color: #FFFFFF !important;
+}
+
+html.light .cover-theme-banner svg {
+  color: #DCFCE7 !important;
+}
+
+html.light .cover-dropzone {
+  background-color: #F8FAF9 !important;
+  border-color: rgba(46, 125, 50, 0.3) !important;
+}
+
+html.light .cover-dropzone:hover {
+  background-color: #F0FDF4 !important;
+  border-color: #2E7D32 !important;
+}
+
+html.light .cover-upload-icon {
+  background-color: #DCFCE7 !important;
+  border-color: rgba(46, 125, 50, 0.3) !important;
+}
+
+html.light .cover-upload-icon svg {
+  color: #2E7D32 !important;
+}

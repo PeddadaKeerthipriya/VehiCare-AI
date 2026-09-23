@@ -1,0 +1,58 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: vehicare-backend
+    restart: unless-stopped
+    env_file:
+      - .env.backend
+    expose:
+      - "8000"
+    networks:
+      - vehicare
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      args:
+        # Baked into the client bundle at build time — must match the
+        # public URL the backend/Supabase will actually be reachable at.
+        NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
+        NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ${NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY}
+        NEXT_PUBLIC_GOOGLE_MAPS_API_KEY: ${NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+    container_name: vehicare-frontend
+    restart: unless-stopped
+    expose:
+      - "3000"
+    networks:
+      - vehicare
+    depends_on:
+      - backend
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: vehicare-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/caddy/Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - vehicare
+    depends_on:
+      - frontend
+      - backend
+
+networks:
+  vehicare:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:
