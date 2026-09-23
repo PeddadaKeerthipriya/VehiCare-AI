@@ -87,21 +87,21 @@
         "url": "=https://pklriiaxigecpcfovevp.supabase.co/rest/v1/service_slips?id=eq.{{$json.slip_id}}",
         "sendHeaders": true,
         "headerParameters": {
-          "parameters": [
-            {
-              "name": "apikey",
-              "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBrbHJpaWF4aWdlY3BjZm92ZXZwIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc4NTc5OTkzNywiZXhwIjoyMTAxMzc1OTM3fQ.dNj8HAoazuHCWdzIAseniQwb2tPxgDFDueP4qwWW-Rk"
-            },
-            {
-              "name": "Content-Type",
-              "value": "application/json"
-            }
-          ]
-        },
+  "parameters": [
+    {
+      "name": "HTTP-Referer",
+      "value": "https://vehicare.app"
+    },
+    {
+      "name": "X-Title",
+      "value": "VehiCare AI"
+    },
+    {
+      "name": "Content-Type",
+      "value": "application/json"
+    }
+  ]
+},
         "sendBody": true,
         "specifyBody": "json",
         "jsonBody": "={{ JSON.stringify({\n  ocr_raw_text: JSON.stringify($json.parsed_data),\n  parsed_data: $json.parsed_data,\n  status: 'Parsed'\n}) }}",
