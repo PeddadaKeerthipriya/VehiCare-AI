@@ -288,7 +288,18 @@ export default function DashboardPage() {
   };
 
   useEffect(() => {
-    const getUser = async () => {
+    const initializeDashboard = async () => {
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError || !session) {
+        setStatsError("Your session has expired. Please sign in again.");
+        setLoadingStats(false);
+        return;
+      }
+
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -300,10 +311,11 @@ export default function DashboardPage() {
           setUserName(fullName);
         }
       }
+
+      await loadStats();
     };
 
-    getUser();
-    loadStats();
+    initializeDashboard();
 
     // Supabase Realtime: subscribe to dashboard metrics changes
     const channel = supabase
