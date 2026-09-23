@@ -33,7 +33,6 @@ remain deployed on a public server such as the Hostinger VPS described in
 NEXT_PUBLIC_API_URL=https://api.yourdomain.com
 NEXT_PUBLIC_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-google-maps-key
 ```
 
 `NEXT_PUBLIC_API_URL` must point to the deployed FastAPI service, not

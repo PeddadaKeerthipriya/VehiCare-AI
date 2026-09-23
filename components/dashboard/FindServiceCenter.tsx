@@ -978,9 +978,9 @@ export function FindServiceCenter() {
                     {!process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center p-6 text-center bg-card/90 z-10">
                         <MapIcon className="h-8 w-8 text-muted-foreground mb-2" />
-                        <h4 className="text-sm font-bold text-foreground">Google Maps Key Required</h4>
+                        <h4 className="text-sm font-bold text-foreground">List View Available</h4>
                         <p className="text-xs text-muted-foreground max-w-xs mt-1">
-                          Configure <code className="text-[#66C56A]">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> to enable interactive Google Maps.
+                          Service centers are loaded from OpenStreetMap. Use List View to browse the available centers.
                         </p>
                         <Button
                           size="sm"
