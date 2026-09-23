@@ -1,21 +1,22 @@
 import io
 import os
+import shutil
 
 import pytesseract
 from PIL import Image
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, Depends, UploadFile, File, HTTPException
+
+from app.middleware.auth import AuthContext, verify_user
 
 
 router = APIRouter()
 
 
-TESSERACT_PATH = (
-    r"C:\Program Files\Tesseract-OCR\tesseract.exe"
-)
+TESSERACT_PATH = os.getenv("TESSERACT_CMD", "tesseract")
 
 
 def configure_tesseract():
-    if not os.path.isfile(TESSERACT_PATH):
+    if not shutil.which(TESSERACT_PATH):
         raise RuntimeError(
             f"Tesseract executable not found at: "
             f"{TESSERACT_PATH}"
@@ -32,6 +33,7 @@ configure_tesseract()
 @router.post("/ocr")
 async def extract_text(
     file: UploadFile = File(...),
+    auth: AuthContext = Depends(verify_user),
 ):
     if file.content_type not in {
         "image/jpeg",

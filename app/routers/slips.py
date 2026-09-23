@@ -1,6 +1,7 @@
 
 import os
 import re
+import shutil
 import uuid
 from io import BytesIO
 from typing import Optional
@@ -57,7 +58,7 @@ ALLOWED_STATUSES = {
 # TESSERACT CONFIGURATION
 # =========================================================
 
-TESSERACT_PATH = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+TESSERACT_PATH = os.getenv("TESSERACT_CMD", "tesseract")
 
 
 def configure_tesseract() -> None:
@@ -65,7 +66,7 @@ def configure_tesseract() -> None:
     Configure Tesseract explicitly.
     """
 
-    if not os.path.isfile(TESSERACT_PATH):
+    if not shutil.which(TESSERACT_PATH):
         raise RuntimeError(
             f"Tesseract executable was not found at: "
             f"{TESSERACT_PATH}"
