@@ -248,10 +248,19 @@ async def create_service(
             slip_response = (
                 supabase
                 .table("service_slips")
-                .select("id")
+                .select("id, user_id")
                 .eq("id", slip_id)
-                .eq("user_id", user_id)
                 .execute()
+            )
+
+            print(
+                "[SLIP VERIFY]",
+                "slip_id=",
+                slip_id,
+                "auth_user_id=",
+                user_id,
+                "rows=",
+                slip_response.data,
             )
 
         except Exception as exc:
@@ -269,6 +278,13 @@ async def create_service(
             raise HTTPException(
                 status_code=404,
                 detail="Service slip not found",
+            )
+
+        slip_owner_id = str(slip_response.data[0].get("user_id"))
+        if slip_owner_id != user_id:
+            raise HTTPException(
+                status_code=403,
+                detail="Service slip does not belong to the authenticated user",
             )
 
         # -------------------------------------------------
